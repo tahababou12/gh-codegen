@@ -8,8 +8,8 @@ from huggingface_hub import create_repo, upload_folder
 import tempfile
 import subprocess
 
-MIRROR_DIRECTORY = "hf_public_repos"
-DATASET_ID = "hf-codegen"
+MIRROR_DIRECTORY = "lc_public_repos"
+DATASET_ID = "lc-codegen"
 SERIALIZE_IN_CHUNKS = 10000
 FEATHER_FORMAT = "ftr"
 
@@ -55,12 +55,11 @@ def upload_to_hub(file_format: str, repo_id: str):
     repo_id = create_repo(repo_id=repo_id, exist_ok=True, repo_type="dataset").repo_id
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        os.makedirs(tmpdirname)
+        # Remove os.makedirs(tmpdirname) because tmpdirname is already created by TemporaryDirectory
         command = f"mv *.{file_format} {tmpdirname}"
-        _ = subprocess.run(command.split())
+        subprocess.run(command, shell=True, check=True)
         upload_folder(repo_id=repo_id, folder_path=tmpdirname, repo_type="dataset")
-
-
+        
 def filter_code_cell(cell) -> bool:
     """Filters a code cell w.r.t shell commands, etc."""
     only_shell = cell["source"].startswith("!")
